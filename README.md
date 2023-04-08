@@ -1,2 +1,2 @@
-# project3
-# Twitter Clone
+# Project3 - Twitter Clone
+
