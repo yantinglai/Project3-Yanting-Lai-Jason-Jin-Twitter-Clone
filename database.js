@@ -1,4 +1,3 @@
-const { Data } = require('hexo/lib/models');
 const mongoose = require('mongoose');
 // The require("mongoose") call will return a Singleton object
 // Singleton object means that the first time we call require('mongoose)
