@@ -1,6 +1,6 @@
 $('#postTextarea').keyup((event) => {
   var textbox = $(event.target);
-  var value = textbox.val().trim(); // remove the space before and after the input
+  var value = textbox.val().trim();
 
   var submitButton = $('#submitPostButton');
 
@@ -11,7 +11,7 @@ $('#postTextarea').keyup((event) => {
     return;
   }
 
-  submitButton.prop('disabled', false); // if user enters any text, the submitbuttom will be enabled
+  submitButton.prop('disabled', false);
 });
 
 $('#submitPostButton').click(() => {
@@ -22,7 +22,52 @@ $('#submitPostButton').click(() => {
     content: textbox.val(),
   };
 
-  // create a post
-  // submit a post AJAX request, xhr: xml http request
-  $.post('/api/posts', data, (postData, status, xhr) => {});
+  $.post('/api/posts', data, (postData) => {
+    var html = createPostHtml(postData);
+    $('.postsContainer').prepend(html);
+    textbox.val('');
+    button.prop('disabled', true);
+  });
 });
+
+function createPostHtml(postData) {
+  var postedBy = postData.postedBy;
+  var displayName = postedBy.firstName + ' ' + postedBy.lastName;
+  var timestamp = postData.createdAt;
+
+  return `<div class = 'post'>
+              <div class = 'mainContainContainer'>
+                  <div class ='userImageContainer'>
+                      <img src ='${postedBy.profilePic}'>
+                  </div>
+                  <div class ='postContentContainer'>
+                      <div class='header'>
+                          <a href = '/profile/${postedBy.username}' class = 'displayName'>${displayName}</a>
+                          <span class='username'>@${postedBy.username}</span>
+                          <span class='date'>${timestamp}</span>
+                      </div>
+                      <div class='postBody'>
+                          <span>${postData.content}</span>
+                      </div>
+                      <div class='postFooter'>
+                          <div class='postButtonContainer'>
+                              <button>
+                                  <i class='far fa-comment'></i>
+                              </button>
+                          </div>
+                          <div class='postButtonContainer'>
+                              <button>
+                                  <i class='fas fa-retweet'></i>
+                              </button>
+                          </div>
+                          <div class='postButtonContainer'>
+                              <button>
+                                  <i class='far fa-heart'></i>
+                              </button>
+                          </div>
+
+                      </div>
+                  </div>
+          </div>
+          </div>`;
+}
