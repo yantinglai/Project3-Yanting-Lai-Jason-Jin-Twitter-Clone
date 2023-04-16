@@ -1,8 +1,17 @@
 extends layouts/main-layout.pug
-
-block content    
+//- /*
+//-     This is the home page. It is the page that is loaded when the user is logged in.
+//-     It displays the posts of the people the user is following.
+//- */
+block content
     +createPostForm(userLoggedIn)
     .postsContainer
 
+    +createReplyModal(userLoggedIn)
+
+//- /*
+//-     This script is loaded on the home page. It is responsible for loading the posts
+//-     and handling the post form.
+//- */
 block scripts
     script(src="/js/home.js")

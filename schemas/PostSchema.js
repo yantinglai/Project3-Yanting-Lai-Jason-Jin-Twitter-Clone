@@ -15,6 +15,10 @@ const PostSchema = new Schema(
 
     //pin the user post
     pinned: Boolean,
+    replyTo: {
+      type: Schema.Types.ObjectId,
+      ref: 'Post',
+    },
   },
   { timestamps: true }
 ); // add timestamp

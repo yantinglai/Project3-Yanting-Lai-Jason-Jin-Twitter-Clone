@@ -1,8 +1,10 @@
-$('#postTextarea').keyup((event) => {
+$('#postTextarea, #replyTextarea').keyup((event) => {
   var textbox = $(event.target);
   var value = textbox.val().trim();
 
-  var submitButton = $('#submitPostButton');
+  var isModal = textbox.parents('.modal').length == 1;
+
+  var submitButton = isModal ? $('#submitReplyButton') : $('#submitPostButton');
 
   if (submitButton.length == 0) return alert('No submit button found');
 
@@ -14,69 +16,124 @@ $('#postTextarea').keyup((event) => {
   submitButton.prop('disabled', false);
 });
 
-$('#submitPostButton').click(() => {
+$('#submitPostButton, #submitReplyButton').click(() => {
   var button = $(event.target);
-  var textbox = $('#postTextarea');
+
+  var isModal = button.parents('.modal').length == 1;
+  var textbox = isModal ? $('#replyTextarea') : $('#postTextarea');
 
   var data = {
     content: textbox.val(),
   };
 
+  if (isModal) {
+    var id = button.data().id;
+    if (id == null) return alert('Button id is null');
+    data.replyTo = id;
+  }
+
   $.post('/api/posts', data, (postData) => {
-    var html = createPostHtml(postData);
-    $('.postsContainer').prepend(html);
-    textbox.val('');
-    button.prop('disabled', true);
+    if (postData.replyTo) {
+      location.reload();
+    } else {
+      var html = createPostHtml(postData);
+      $('.postsContainer').prepend(html);
+      textbox.val('');
+      button.prop('disabled', true);
+    }
   });
 });
 
-function createPostHtml(postData) {
+$('#replyModal').on('show.bs.modal', (event) => {
+  var button = $(event.relatedTarget);
+  var postId = getPostIdFromElement(button);
+  $('#submitReplyButton').data('id', postId);
+
+  $.get('/api/posts/' + postId, (results) => {
+    outputPosts(results.postData, $('#originalPostContainer'));
+  });
+});
+
+$('#replyModal').on('hidden.bs.modal', () =>
+  $('#originalPostContainer').html('')
+);
+
+$(document).on('click', '.post', (event) => {
+  var element = $(event.target);
+  var postId = getPostIdFromElement(element);
+
+  if (postId !== undefined && !element.is('button')) {
+    window.location.href = '/posts/' + postId;
+  }
+});
+
+function getPostIdFromElement(element) {
+  var isRoot = element.hasClass('post');
+  var rootElement = isRoot == true ? element : element.closest('.post');
+  var postId = rootElement.data().id;
+
+  if (postId === undefined) return alert('Post id undefined');
+
+  return postId;
+}
+
+function createPostHtml(postData, largeFont = false) {
+  if (postData == null) return alert('post object is null');
+
   var postedBy = postData.postedBy;
 
   if (postedBy._id === undefined) {
     return console.log('User object not populated');
   }
   var displayName = postedBy.firstName + ' ' + postedBy.lastName;
-  var timestamp = timeDifference(new Date(), new Date(postData.createdAt));
+  var timestamp = calculateTimeDifference(
+    new Date(),
+    new Date(postData.createdAt)
+  );
 
-  return `<div class = 'post'>
-              <div class = 'mainContainContainer'>
-                  <div class ='userImageContainer'>
-                      <img src ='${postedBy.profilePic}'>
-                  </div>
-                  <div class ='postContentContainer'>
-                      <div class='header'>
-                          <a href = '/profile/${postedBy.username}' class = 'displayName'>${displayName}</a>
-                          <span class='username'>@${postedBy.username}</span>
-                          <span class='date'>${timestamp}</span>
-                      </div>
-                      <div class='postBody'>
-                          <span>${postData.content}</span>
-                      </div>
-                      <div class='postFooter'>
-                          <div class='postButtonContainer'>
-                              <button>
-                                  <i class='far fa-comment'></i>
-                              </button>
-                          </div>
-                          <div class='postButtonContainer'>
-                              <button>
-                                  <i class='fas fa-retweet'></i>
-                              </button>
-                          </div>
-                          <div class='postButtonContainer'>
-                              <button>
-                                  <i class='far fa-heart'></i>
-                              </button>
-                          </div>
+  var largeFontClass = largeFont ? 'largeFont' : '';
+  var replyFlag = '';
+  if (postData.replyTo && postData.replyTo._id) {
+    if (!postData.replyTo._id) {
+      return alert('Reply to is not populated');
+    } else if (!postData.replyTo.postedBy._id) {
+      return alert('Posted by is not populated');
+    }
 
-                      </div>
-                  </div>
-          </div>
-          </div>`;
+    var replyToUsername = postData.replyTo.postedBy.username;
+    replyFlag = `<div class='replyFlag'>
+                        Replying to <a href='/profile/${replyToUsername}'>@${replyToUsername}<a>
+                    </div>`;
+  }
+
+  return `<div class='post ${largeFontClass}' data-id='${postData._id}'>
+                <div class='mainContentContainer'>
+                    <div class='userImageContainer'>
+                        <img src='${postedBy.profilePic}'>
+                    </div>
+                    <div class='postContentContainer'>
+                        <div class='header'>
+                            <a href='/profile/${postedBy.username}' class='displayName'>${displayName}</a>
+                            <span class='username'>@${postedBy.username}</span>
+                            <span class='date'>${timestamp}</span>
+                        </div>
+                        ${replyFlag}
+                        <div class='postBody'>
+                            <span>${postData.content}</span>
+                        </div>
+                        <div class='postFooter'>
+                            <div class='postButtonContainer'>
+                                <button data-toggle='modal' data-target='#replyModal'>
+                                    <i class='far fa-comment'></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
 }
 
-function timeDifference(current, previous) {
+function calculateTimeDifference(current, previous) {
   var msPerMinute = 60 * 1000;
   var msPerHour = msPerMinute * 60;
   var msPerDay = msPerHour * 24;
@@ -101,4 +158,37 @@ function timeDifference(current, previous) {
   } else {
     return +Math.round(elapsed / msPerYear) + ' years ago';
   }
+}
+
+function outputPosts(results, container) {
+  container.html('');
+
+  if (!Array.isArray(results)) {
+    results = [results];
+  }
+
+  results.forEach((result) => {
+    var html = createPostHtml(result);
+    container.append(html);
+  });
+
+  if (results.length == 0) {
+    container.append("<span class='noResults'>Nothing to show.</span>");
+  }
+}
+function outputPostsWithReplies(results, container) {
+  container.html('');
+
+  if (results.replyTo !== undefined && results.replyTo._id !== undefined) {
+    var html = createPostHtml(results.replyTo);
+    container.append(html);
+  }
+
+  var mainPostHtml = createPostHtml(results.postData, true);
+  container.append(mainPostHtml);
+
+  results.replies.forEach((result) => {
+    var html = createPostHtml(result);
+    container.append(html);
+  });
 }
