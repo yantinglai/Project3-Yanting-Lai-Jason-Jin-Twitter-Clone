@@ -8,7 +8,11 @@ mixin createPostForm(userLoggedIn)
                 button#submitPostButton(disabled="") Post
 
 mixin createReplyModal(userLoggedIn)
+<<<<<<< HEAD
     #replyModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='replymodalLabel', aria-hidden='true')
+=======
+    #replyModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='replyModalLabel', aria-hidden='true')
+>>>>>>> JasonJin
         .modal-dialog(role='document')
             .modal-content
                 .modal-header
@@ -24,4 +28,36 @@ mixin createReplyModal(userLoggedIn)
                             textarea#replyTextarea(placeholder="What's happening?")
                 .modal-footer
                     button.btn.btn-secondary(type='button', data-dismiss='modal') Close
+<<<<<<< HEAD
                     button#submitReplyButton.btn.btn-primary(type='button', disabled = "") Reply
+=======
+                    button#submitReplyButton.btn.btn-primary(type='button', disabled="") Reply
+
+mixin createDeletePostModal()
+    #deletePostModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='deletePostModalLabel', aria-hidden='true')
+        .modal-dialog(role='document')
+            .modal-content
+                .modal-header
+                    h5#deletePostModalLabel.modal-title Delete the post?
+                    button.close(type='button', data-dismiss='modal', aria-label='Close')
+                    span(aria-hidden='true') &times;
+                .modal-body
+                    p You won't be able to delete this.
+                .modal-footer
+                    button.btn.btn-secondary(type='button', data-dismiss='modal') Close
+                    button#deletePostButton.btn.btn-primary(type='button') Delete
+
+mixin createPostModals(userLoggedIn)
+    +createReplyModal(userLoggedIn)
+    +createDeletePostModal()
+
+mixin createFollowButton(user, isFollowing)
+    - text = isFollowing ? "Following" : "Follow"
+    - buttonClass = isFollowing ? "followButton following" : "followButton"
+    button(class=buttonClass, data-user=user._id) #{text}
+
+mixin createTab(name, href, isSelected)
+    - className = isSelected ? "tab active" : "tab"
+    a(href=href, class=className)
+        span #{name}
+>>>>>>> JasonJin

@@ -7,11 +7,20 @@ block content
     +createPostForm(userLoggedIn)
     .postsContainer
 
+<<<<<<< HEAD
     +createReplyModal(userLoggedIn)
 
 //- /*
 //-     This script is loaded on the home page. It is responsible for loading the posts
 //-     and handling the post form.
 //- */
+=======
+block content    
+    +createPostForm(userLoggedIn)
+    .postsContainer
+
+    +createPostModals(userLoggedIn)
+
+>>>>>>> JasonJin
 block scripts
     script(src="/js/home.js")

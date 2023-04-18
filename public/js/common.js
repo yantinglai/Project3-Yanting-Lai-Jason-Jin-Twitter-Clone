@@ -58,6 +58,74 @@ $('#replyModal').on('hidden.bs.modal', () =>
   $('#originalPostContainer').html('')
 );
 
+<<<<<<< HEAD
+=======
+$('#deletePostModal').on('show.bs.modal', (event) => {
+  var button = $(event.relatedTarget);
+  var postId = getPostIdFromElement(button);
+  $('#deletePostButton').data('id', postId);
+});
+
+$('#deletePostButton').click((event) => {
+  var postId = $(event.target).data('id');
+
+  $.ajax({
+    url: `/api/posts/${postId}`,
+    type: 'DELETE',
+    success: (data, status, xhr) => {
+      if (xhr.status != 202) {
+        alert('could not delete post');
+        return;
+      }
+
+      location.reload();
+    },
+  });
+});
+
+$(document).on('click', '.likeButton', (event) => {
+  var button = $(event.target);
+  var postId = getPostIdFromElement(button);
+
+  if (postId === undefined) return;
+
+  $.ajax({
+    url: `/api/posts/${postId}/like`,
+    type: 'PUT',
+    success: (postData) => {
+      button.find('span').text(postData.likes.length || '');
+
+      if (postData.likes.includes(userLoggedIn._id)) {
+        button.addClass('active');
+      } else {
+        button.removeClass('active');
+      }
+    },
+  });
+});
+
+$(document).on('click', '.retweetButton', (event) => {
+  var button = $(event.target);
+  var postId = getPostIdFromElement(button);
+
+  if (postId === undefined) return;
+
+  $.ajax({
+    url: `/api/posts/${postId}/retweet`,
+    type: 'POST',
+    success: (postData) => {
+      button.find('span').text(postData.retweetUsers.length || '');
+
+      if (postData.retweetUsers.includes(userLoggedIn._id)) {
+        button.addClass('active');
+      } else {
+        button.removeClass('active');
+      }
+    },
+  });
+});
+
+>>>>>>> JasonJin
 $(document).on('click', '.post', (event) => {
   var element = $(event.target);
   var postId = getPostIdFromElement(element);
@@ -80,11 +148,19 @@ function getPostIdFromElement(element) {
 function createPostHtml(postData, largeFont = false) {
   if (postData == null) return alert('post object is null');
 
+<<<<<<< HEAD
+=======
+  var isRetweet = postData.retweetData !== undefined;
+  var retweetedBy = isRetweet ? postData.postedBy.username : null;
+  postData = isRetweet ? postData.retweetData : postData;
+
+>>>>>>> JasonJin
   var postedBy = postData.postedBy;
 
   if (postedBy._id === undefined) {
     return console.log('User object not populated');
   }
+<<<<<<< HEAD
   var displayName = postedBy.firstName + ' ' + postedBy.lastName;
   var timestamp = calculateTimeDifference(
     new Date(),
@@ -92,6 +168,30 @@ function createPostHtml(postData, largeFont = false) {
   );
 
   var largeFontClass = largeFont ? 'largeFont' : '';
+=======
+
+  var displayName = postedBy.firstName + ' ' + postedBy.lastName;
+  var timestamp = timeDifference(new Date(), new Date(postData.createdAt));
+
+  var likeButtonActiveClass = postData.likes.includes(userLoggedIn._id)
+    ? 'active'
+    : '';
+  var retweetButtonActiveClass = postData.retweetUsers.includes(
+    userLoggedIn._id
+  )
+    ? 'active'
+    : '';
+  var largeFontClass = largeFont ? 'largeFont' : '';
+
+  var retweetText = '';
+  if (isRetweet) {
+    retweetText = `<span>
+                        <i class='fas fa-retweet'></i>
+                        Retweeted by <a href='/profile/${retweetedBy}'>@${retweetedBy}</a>    
+                    </span>`;
+  }
+
+>>>>>>> JasonJin
   var replyFlag = '';
   if (postData.replyTo && postData.replyTo._id) {
     if (!postData.replyTo._id) {
@@ -106,16 +206,37 @@ function createPostHtml(postData, largeFont = false) {
                     </div>`;
   }
 
+<<<<<<< HEAD
   return `<div class='post ${largeFontClass}' data-id='${postData._id}'>
+=======
+  var buttons = '';
+  if (postData.postedBy._id == userLoggedIn._id) {
+    buttons = `<button data-id="${postData._id}" data-toggle="modal" data-target="#deletePostModal"><i class='fas fa-times'></i></button>`;
+  }
+
+  return `<div class='post ${largeFontClass}' data-id='${postData._id}'>
+                <div class='postActionContainer'>
+                    ${retweetText}
+                </div>
+>>>>>>> JasonJin
                 <div class='mainContentContainer'>
                     <div class='userImageContainer'>
                         <img src='${postedBy.profilePic}'>
                     </div>
                     <div class='postContentContainer'>
                         <div class='header'>
+<<<<<<< HEAD
                             <a href='/profile/${postedBy.username}' class='displayName'>${displayName}</a>
                             <span class='username'>@${postedBy.username}</span>
                             <span class='date'>${timestamp}</span>
+=======
+                            <a href='/profile/${
+                              postedBy.username
+                            }' class='displayName'>${displayName}</a>
+                            <span class='username'>@${postedBy.username}</span>
+                            <span class='date'>${timestamp}</span>
+                            ${buttons}
+>>>>>>> JasonJin
                         </div>
                         ${replyFlag}
                         <div class='postBody'>
@@ -127,13 +248,34 @@ function createPostHtml(postData, largeFont = false) {
                                     <i class='far fa-comment'></i>
                                 </button>
                             </div>
+<<<<<<< HEAD
+=======
+                            <div class='postButtonContainer green'>
+                                <button class='retweetButton ${retweetButtonActiveClass}'>
+                                    <i class='fas fa-retweet'></i>
+                                    <span>${
+                                      postData.retweetUsers.length || ''
+                                    }</span>
+                                </button>
+                            </div>
+                            <div class='postButtonContainer red'>
+                                <button class='likeButton ${likeButtonActiveClass}'>
+                                    <i class='far fa-heart'></i>
+                                    <span>${postData.likes.length || ''}</span>
+                                </button>
+                            </div>
+>>>>>>> JasonJin
                         </div>
                     </div>
                 </div>
             </div>`;
 }
 
+<<<<<<< HEAD
 function calculateTimeDifference(current, previous) {
+=======
+function timeDifference(current, previous) {
+>>>>>>> JasonJin
   var msPerMinute = 60 * 1000;
   var msPerHour = msPerMinute * 60;
   var msPerDay = msPerHour * 24;
@@ -143,20 +285,33 @@ function calculateTimeDifference(current, previous) {
   var elapsed = current - previous;
 
   if (elapsed < msPerMinute) {
+<<<<<<< HEAD
     if (elapsed / 1000 < 30) {
       return 'Just now';
     }
+=======
+    if (elapsed / 1000 < 30) return 'Just now';
+
+>>>>>>> JasonJin
     return Math.round(elapsed / 1000) + ' seconds ago';
   } else if (elapsed < msPerHour) {
     return Math.round(elapsed / msPerMinute) + ' minutes ago';
   } else if (elapsed < msPerDay) {
     return Math.round(elapsed / msPerHour) + ' hours ago';
   } else if (elapsed < msPerMonth) {
+<<<<<<< HEAD
     return +Math.round(elapsed / msPerDay) + ' days ago';
   } else if (elapsed < msPerYear) {
     return +Math.round(elapsed / msPerMonth) + ' months ago';
   } else {
     return +Math.round(elapsed / msPerYear) + ' years ago';
+=======
+    return Math.round(elapsed / msPerDay) + ' days ago';
+  } else if (elapsed < msPerYear) {
+    return Math.round(elapsed / msPerMonth) + ' months ago';
+  } else {
+    return Math.round(elapsed / msPerYear) + ' years ago';
+>>>>>>> JasonJin
   }
 }
 
@@ -176,6 +331,10 @@ function outputPosts(results, container) {
     container.append("<span class='noResults'>Nothing to show.</span>");
   }
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> JasonJin
 function outputPostsWithReplies(results, container) {
   container.html('');
 
