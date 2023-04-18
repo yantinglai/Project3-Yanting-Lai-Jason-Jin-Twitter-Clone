@@ -8,9 +8,6 @@ const Post = require('../../schemas/PostSchema');
 app.use(bodyParser.urlencoded({ extended: false }));
 
 router.get('/', async (req, res, next) => {
-<<<<<<< HEAD
-  var results = await getPosts({});
-=======
   var searchObj = req.query;
 
   if (searchObj.isReply !== undefined) {
@@ -21,7 +18,6 @@ router.get('/', async (req, res, next) => {
   }
 
   var results = await getPosts(searchObj);
->>>>>>> JasonJin
   res.status(200).send(results);
 });
 
@@ -45,15 +41,8 @@ router.get('/:id', async (req, res, next) => {
 });
 
 router.post('/', async (req, res, next) => {
-<<<<<<< HEAD
-  // make sure when users submit data, it gets handled in the backend
-
-  if (!req.body.content) {
-    console.log('Alert! There is no content param sent with request');
-=======
   if (!req.body.content) {
     console.log('Content param not sent with request');
->>>>>>> JasonJin
     return res.sendStatus(400);
   }
 
@@ -69,10 +58,7 @@ router.post('/', async (req, res, next) => {
   Post.create(postData)
     .then(async (newPost) => {
       newPost = await User.populate(newPost, { path: 'postedBy' });
-<<<<<<< HEAD
-=======
 
->>>>>>> JasonJin
       res.status(201).send(newPost);
     })
     .catch((error) => {
@@ -81,11 +67,6 @@ router.post('/', async (req, res, next) => {
     });
 });
 
-<<<<<<< HEAD
-async function getPosts(filter) {
-  var results = await Post.find(filter)
-    .populate('postedBy')
-=======
 router.put('/:id/like', async (req, res, next) => {
   var postId = req.params.id;
   var userId = req.session.user._id;
@@ -180,17 +161,12 @@ async function getPosts(filter) {
   var results = await Post.find(filter)
     .populate('postedBy')
     .populate('retweetData')
->>>>>>> JasonJin
     .populate('replyTo')
     .sort({ createdAt: -1 })
     .catch((error) => console.log(error));
 
   results = await User.populate(results, { path: 'replyTo.postedBy' });
-<<<<<<< HEAD
-  return await User.populate(results, { path: 'postedBy' });
-=======
   return await User.populate(results, { path: 'retweetData.postedBy' });
->>>>>>> JasonJin
 }
 
 module.exports = router;
