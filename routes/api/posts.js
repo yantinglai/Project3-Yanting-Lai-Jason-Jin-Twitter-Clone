@@ -14,7 +14,32 @@ router.get('/', async (req, res, next) => {
     var isReply = searchObj.isReply == 'true';
     searchObj.replyTo = { $exists: isReply };
     delete searchObj.isReply;
-    console.log(searchObj);
+  }
+
+  if (searchObj.search !== undefined) {
+    searchObj.content = { $regex: searchObj.search, $options: 'i' };
+    delete searchObj.search;
+  }
+
+  if (searchObj.followingOnly !== undefined) {
+    var followingOnly = searchObj.followingOnly == 'true';
+
+    if (followingOnly) {
+      var objectIds = [];
+      // if nobody is following you, set as empty array
+      if (!req.session.user.following) {
+        req.session.user.following = [];
+      }
+
+      req.session.user.following.forEach((user) => {
+        objectIds.push(user);
+      });
+      // can see our own posts in the newsfeed
+      objectIds.push(req.session.user._id);
+      searchObj.postedBy = { $in: objectIds };
+    }
+
+    delete searchObj.followingOnly;
   }
 
   var results = await getPosts(searchObj);
@@ -151,6 +176,25 @@ router.post('/:id/retweet', async (req, res, next) => {
 router.delete('/:id', (req, res, next) => {
   Post.findByIdAndDelete(req.params.id)
     .then(() => res.sendStatus(202))
+    .catch((error) => {
+      console.log(error);
+      res.sendStatus(400);
+    });
+});
+
+router.put('/:id', async (req, res, next) => {
+  if (req.body.pinned !== undefined) {
+    await Post.updateMany(
+      { postedBy: req.session.user },
+      { pinned: false }
+    ).catch((error) => {
+      console.log(error);
+      res.sendStatus(400);
+    });
+  }
+
+  Post.findByIdAndUpdate(req.params.id, req.body)
+    .then(() => res.sendStatus(204))
     .catch((error) => {
       console.log(error);
       res.sendStatus(400);
