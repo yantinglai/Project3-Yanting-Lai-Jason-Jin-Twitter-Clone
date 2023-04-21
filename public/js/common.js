@@ -50,10 +50,11 @@ $('#submitPostButton, #submitReplyButton').click(() => {
 $('#replyModal').on('show.bs.modal', (event) => {
   var button = $(event.relatedTarget);
   var postId = getPostIdFromElement(button);
-  $('#submitReplyButton').data('id', postId);
+  $('#editPostButton').data('id', postId);
 
-  $.get('/api/posts/' + postId, (results) => {
-    outputPosts(results.postData, $('#originalPostContainer'));
+  $.get(`/api/posts/${postId}`, (results) => {
+    // Update the post content in the textarea
+    $('#postTextarea').val(results.postData.content); // Modify this line to update the post content
   });
 });
 
@@ -65,6 +66,16 @@ $('#deletePostModal').on('show.bs.modal', (event) => {
   var button = $(event.relatedTarget);
   var postId = getPostIdFromElement(button);
   $('#deletePostButton').data('id', postId);
+});
+
+$('#editPostModal').on('show.bs.modal', (event) => {
+  var button = $(event.relatedTarget);
+  var postId = getPostIdFromElement(button);
+  $('#editPostButton').data('id', postId);
+
+  $.get(`/api/posts/${postId}`, (results) => {
+    $('#postTextarea').val(results.postData.content);
+  });
 });
 
 $('#confirmPinModal').on('show.bs.modal', (event) => {
@@ -383,7 +394,8 @@ function createPostHtml(postData, largeFont = false) {
     }
 
     buttons = `<button class='pinButton ${pinnedClass}' data-id="${postData._id}" data-toggle="modal" data-target="${dataTarget}"><i class='fas fa-thumbtack'></i></button>
-                    <button data-id="${postData._id}" data-toggle="modal" data-target="#deletePostModal"><i class='fas fa-times'></i></button>`;
+                    <button data-id="${postData._id}" data-toggle="modal" data-target="#deletePostModal"><i class='fas fa-times'></i></button>
+                    <button data-id="${postData._id}" data-toggle="modal" data-target="#editPostModal"><i class='fas fa-edit'></i></button>`;
   }
 
   return `<div class='post ${largeFontClass}' data-id='${postData._id}'>

@@ -40,11 +40,30 @@ mixin createDeletePostModal()
                     button.btn.btn-secondary(type='button', data-dismiss='modal') Close
                     button#deletePostButton.btn.btn-primary(type='button') Delete
 
+
+mixin createEditPostModal(userLoggedIn)
+  #editPostModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='editPostModalLabel', aria-hidden='true')
+    .modal-dialog(role='document')
+      .modal-content
+        .modal-header
+          h5#editPostModalLabel.modal-title Edit the post
+          button.close(type='button', data-dismiss='modal', aria-label='Close')
+            span(aria-hidden='true') &times;
+        .modal-body
+          // Additional code to populate modal content with post data
+          p Please edit the post content:
+          textarea#postTextarea.form-control(rows='3', cols='30')
+        .modal-footer
+          button.btn.btn-secondary(type='button', data-dismiss='modal') Close
+          button#editPostButton.btn.btn-primary(type='button') Save Changes
+
+
 mixin createPostModals(userLoggedIn)
     +createReplyModal(userLoggedIn)
     +createDeletePostModal()
     +createPinnedPostModal()
     +createUnpinPostModal()
+    +createEditPostModal(userLoggedIn)
 
 mixin createFollowButton(user, isFollowing)
     - text = isFollowing ? "Following" : "Follow"

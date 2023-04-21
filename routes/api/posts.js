@@ -92,6 +92,23 @@ router.post('/', async (req, res, next) => {
     });
 });
 
+// Add a new route for updating post content
+router.put('/:id/edit', async (req, res, next) => {
+  var postId = req.params.id;
+  var newContent = req.body.content; // Get the updated content from the request body
+
+  // Update post content
+  Post.findByIdAndUpdate(postId, { content: newContent }, { new: true })
+    .populate('postedBy') // Optionally populate the 'postedBy' field with user data
+    .then((updatedPost) => {
+      res.status(200).send(updatedPost);
+    })
+    .catch((error) => {
+      console.log(error);
+      res.sendStatus(400);
+    });
+});
+
 router.put('/:id/like', async (req, res, next) => {
   var postId = req.params.id;
   var userId = req.session.user._id;

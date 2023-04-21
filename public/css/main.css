@@ -34,9 +34,13 @@ h1 {
 
 nav {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: flex-end;
   height: 100%;
+  padding: 0 var(--spacing);
+  justify-content: center;
+  border: 1px solid var(--lightGrey);
+  border-radius: 5px;
 }
 
 nav a {
@@ -47,7 +51,7 @@ nav a {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #212529;
+  color: black;
 }
 
 nav a.blue {
