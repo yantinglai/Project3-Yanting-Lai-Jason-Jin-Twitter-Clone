@@ -446,3 +446,9 @@ button span {
   border: none;
   color: var(--greyText);
 }
+
+img.profile-pic {
+  border-radius: 50%;
+  height: 30px;
+  width: 30px;
+}

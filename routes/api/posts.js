@@ -10,6 +10,12 @@ app.use(bodyParser.urlencoded({ extended: false }));
 router.get('/', async (req, res, next) => {
   var searchObj = req.query;
 
+  if (!req.session.user) {
+    return res.status(401).send({
+      success: false,
+      message: 'You must be logged in to view the newsfeed',
+    });
+  }
   if (searchObj.isReply !== undefined) {
     var isReply = searchObj.isReply == 'true';
     searchObj.replyTo = { $exists: isReply };
@@ -27,6 +33,7 @@ router.get('/', async (req, res, next) => {
     if (followingOnly) {
       var objectIds = [];
       // if nobody is following you, set as empty array
+
       if (!req.session.user.following) {
         req.session.user.following = [];
       }

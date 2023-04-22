@@ -1,7 +1,10 @@
 mixin createPostForm(userLoggedIn)
     .postFormContainer
         .userImageContainer
-            img(src=userLoggedIn.profilePic, alt="User's profile picture")
+            if userLoggedIn
+                img(src=userLoggedIn.profilePic, alt="User's profile picture")
+            else
+                img(src='/images/profilePic.jpeg', alt="Default profile picture")
         .textareaContainer
             textarea#postTextarea(placeholder="What's happening?")
             .buttonsContainer
@@ -19,7 +22,10 @@ mixin createReplyModal(userLoggedIn)
                     #originalPostContainer
                     .postFormContainer
                         .userImageContainer
-                            img(src=userLoggedIn.profilePic, alt="User's profile picture")
+                            if userLoggedIn
+                                img(src=userLoggedIn.profilePic, alt="User's profile picture")
+                            else
+                                img(src='/images/profilePic.jpeg', alt="Default profile picture")
                         .textareaContainer
                             textarea#replyTextarea(placeholder="What's happening?")
                 .modal-footer

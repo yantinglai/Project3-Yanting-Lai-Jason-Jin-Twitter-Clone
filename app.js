@@ -49,7 +49,7 @@ app.use('/api/posts', postsApiRoute);
 app.use('/api/users', usersApiRoute);
 app.use('/logout', logoutRoute);
 
-app.get('/', middleware.requireLogin, (req, res, next) => {
+app.get('/', (req, res, next) => {
   var payload = {
     pageTitle: 'Home',
     userLoggedIn: req.session.user,
