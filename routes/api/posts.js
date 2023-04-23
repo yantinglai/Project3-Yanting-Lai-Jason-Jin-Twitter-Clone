@@ -64,6 +64,23 @@ router.get('/:id', async (req, res, next) => {
 
   res.status(200).send(results);
 });
+// get orginal content
+router.get('/getOriginalContent', async (req, res) => {
+  try {
+    const postId = req.query.postId; // Fetch the post ID from query parameter
+    const post = await Post.findById(postId); // Fetch the post by ID
+    if (!post) return res.status(404).json({ message: 'Post not found' });
+
+    // Extract the content from the fetched post
+    const content = post.content;
+
+    // Return the content in the response
+    res.json({ content: content });
+  } catch (error) {
+    console.error('Error fetching original content:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 router.post('/', async (req, res, next) => {
   if (!req.body.content) {
@@ -85,23 +102,6 @@ router.post('/', async (req, res, next) => {
       newPost = await User.populate(newPost, { path: 'postedBy' });
 
       res.status(201).send(newPost);
-    })
-    .catch((error) => {
-      console.log(error);
-      res.sendStatus(400);
-    });
-});
-
-// Add a new route for updating post content
-router.put('/:id/edit', async (req, res, next) => {
-  var postId = req.params.id;
-  var newContent = req.body.content; // Get the updated content from the request body
-
-  // Update post content
-  Post.findByIdAndUpdate(postId, { content: newContent }, { new: true })
-    .populate('postedBy') // Optionally populate the 'postedBy' field with user data
-    .then((updatedPost) => {
-      res.status(200).send(updatedPost);
     })
     .catch((error) => {
       console.log(error);
@@ -139,6 +139,34 @@ router.put('/:id/like', async (req, res, next) => {
   });
 
   res.status(200).send(post);
+});
+// edit post
+router.put('/:id/edit', async (req, res, next) => {
+  var postId = req.params.id;
+  var updatedContent = req.body.content; // Assuming the updated content is sent in the request body
+
+  // Check if updated content is present in the request body
+  if (!updatedContent) {
+    console.log('Updated content not sent with request');
+    return res.sendStatus(400);
+  }
+
+  // Update the post with the new content
+  try {
+    const updatedPost = await Post.findByIdAndUpdate(
+      postId,
+      { content: updatedContent },
+      { new: true }
+    );
+
+    // Populate any required fields before sending the updated post in the response
+    await User.populate(updatedPost, { path: 'postedBy' });
+
+    res.status(200).send(updatedPost);
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(400);
+  }
 });
 
 router.post('/:id/retweet', async (req, res, next) => {
