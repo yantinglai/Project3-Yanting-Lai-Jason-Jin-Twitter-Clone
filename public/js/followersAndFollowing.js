@@ -1,8 +1,5 @@
 // Determine which tab is selected and load the appropriate content
-if (selectedTab === 'followers') {
-  loadFollowers();
-} else {
-  
+
 $(document).ready(() => {
   if (selectedTab === 'followers') {
     loadFollowers();
