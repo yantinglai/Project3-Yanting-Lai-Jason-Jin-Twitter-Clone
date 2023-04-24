@@ -31,6 +31,17 @@ $('#postTextarea, #replyTextarea').keyup((event) => {
   submitButton.prop('disabled', false);
 });
 
+// $('#editTextarea').keyup((event) => {
+//   var textbox = $(event.target);
+//   var value = textbox.val().trim();
+//   var editPostButton = $('#editPostButton');
+//   if (editPostButton.length == 0) return alert('No submit button found');
+//   if (value == '') {
+//     editPostButton.prop('disabled', true);
+//     return;
+//   }
+//   editPostButton.prop('disabled', false);
+// });
 $('#submitPostButton, #submitReplyButton').click(() => {
   var button = $(event.target);
 
@@ -63,7 +74,23 @@ $('#submitPostButton, #submitReplyButton').click(() => {
 ------------------------------------------------------------------------------------------------
 */
 
-// Assuming you have the 'Post' model imported and available in your code
+$('#editPostModal').on('show.bs.modal', (event) => {
+  var button = $(event.relatedTarget);
+  var postId = getPostIdFromElement(button);
+  $('#editPostButton').data('id', postId);
+
+  $.get('/api/posts/' + postId, (results) => {
+    var content = results.postData.content;
+    console.log(results);
+    console.log(content);
+    $('#originalPostContainer').text(content);
+    $('#editPostTextarea').val('').attr('placeholder', content);
+  });
+});
+
+$('#editPostModal').on('hidden.bs.modal', () =>
+  $('#originalPostContainer').html('')
+);
 
 $('#editPostTextarea').keyup((event) => {
   var button = $(event.relatedTarget);

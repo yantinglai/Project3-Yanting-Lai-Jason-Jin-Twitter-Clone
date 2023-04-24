@@ -40,21 +40,22 @@ mixin createDeletePostModal()
                     button.btn.btn-secondary(type='button', data-dismiss='modal') Close
                     button#deletePostButton.btn.btn-primary(type='button') Delete
 
-mixin createEditPostModal(userLoggedIn, originalContent)
+mixin createEditPostModal(userLoggedIn)
     #editPostModal.modal.fade(tabindex='-1', role='dialog', aria-labelledby='editPostModalLabel', aria-hidden='true')
         .modal-dialog(role='document')
             .modal-content
                 .modal-header
-                    h5#editPostModalLabel.modal-title Edit the post?
+                    h5#editPostModalLabel.modal-title Edit the post
                     button.close(type='button', data-dismiss='modal', aria-label='Close')
                     span(aria-hidden='true') &times;
                 .modal-body
+                    #originalPostContainer
                     .postFormContainer
                         .textareaContainer
-                            textarea#editPostTextarea(placeholder="What's happening?")= originalContent 
+                            textarea#editPostTextarea
                 .modal-footer
                     button.btn.btn-secondary(type='button', data-dismiss='modal') Close
-                    button#editPostModal.btn.btn-primary(type='button') Save Changes
+                    button#editPostButton.btn.btn-primary(type='button') Save Changes
 
 
 mixin createPostModals(userLoggedIn)

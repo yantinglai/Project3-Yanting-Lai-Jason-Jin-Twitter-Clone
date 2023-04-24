@@ -64,6 +64,9 @@ router.get('/:id', async (req, res, next) => {
 
   res.status(200).send(results);
 });
+/*
+------------------------------------------------------------------------------------------------
+*/
 // get orginal content
 router.get('/getOriginalContent', async (req, res) => {
   try {
@@ -81,7 +84,9 @@ router.get('/getOriginalContent', async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
-
+/*
+------------------------------------------------------------------------------------------------
+*/
 router.post('/', async (req, res, next) => {
   if (!req.body.content) {
     console.log('Content param not sent with request');
