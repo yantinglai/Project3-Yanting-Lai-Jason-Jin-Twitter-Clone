@@ -1,3 +1,8 @@
+// Determine which tab is selected and load the appropriate content
+if (selectedTab === 'followers') {
+  loadFollowers();
+} else {
+  
 $(document).ready(() => {
   if (selectedTab === 'followers') {
     loadFollowers();
@@ -6,16 +11,26 @@ $(document).ready(() => {
   }
 });
 
-function loadFollowers() {
-  $.get(`/api/users/${profileUserId}/followers`, (results) => {
+// Make a GET request to the server for the profile user's followers and Pass the array of followers to the outputUsers function to display on the page
+async function loadFollowers() {
+  try {
+    const results = await $.get(`/api/users/${profileUserId}/followers`);
     outputUsers(results.followers, $('.resultsContainer'));
-  });
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 }
 
-function loadFollowing() {
-  $.get(`/api/users/${profileUserId}/following`, (results) => {
+// Make a GET request to the server for the users that the profile user is following and. Pass the array of following users to the outputUsers function to display on the page
+async function loadFollowing() {
+  try {
+    const results = await $.get(`/api/users/${profileUserId}/following`);
     outputUsers(results.following, $('.resultsContainer'));
-  });
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 }
 
 // // Outputting the users

@@ -1,31 +1,38 @@
 var timer;
 
+// Attach an event listener to the search box for the 'keydown' event
 $('#searchBox').keydown(function (event) {
   clearTimeout(timer);
   var textbox = $(event.target);
   var value = textbox.val();
-  var searchType = textbox.data().search;
+  var searchData = textbox.data().search;
 
   timer = setTimeout(function () {
     value = textbox.val().trim();
     if (value == '') {
       $('.resultsContainer').html('');
     } else {
-      search(value, searchType);
+      search(value, searchData);
     }
   }, 1000);
 });
 
-function search(searchTerm, searchType) {
-  var url = searchType == 'users' ? '/api/users' : '/api/posts';
+// Define an asynchronous function to perform the search
+async function search(searchTerm, searchData) {
+  const url = searchData === 'users' ? '/api/users' : '/api/posts';
 
-  $.get(url, { search: searchTerm }, function (results) {
-    // console.log(results);
+  try {
+    const results = await $.get(url, { search: searchTerm });
 
-    if (searchType == 'users') {
+    if (searchData === 'users') {
       outputUsers(results, $('.resultsContainer'));
     } else {
       outputPosts(results, $('.resultsContainer'));
     }
-  });
+
+    return results;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
 }
