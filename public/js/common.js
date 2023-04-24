@@ -1,5 +1,17 @@
-// Globals
-var cropper;
+$('#imageInput').on('change', function (event) {
+  var file = event.target.files[0]; // Get the selected file
+
+  // Read the file data as a DataURL
+  var reader = new FileReader();
+  reader.onload = function (event) {
+    var imageDataUrl = event.target.result; // Get the DataURL of the file
+    // Append the DataURL to the textarea
+    $('#postTextarea, #replyTextarea').val(
+      $('#postTextarea, #replyTextarea').val() + ' ' + imageDataUrl
+    );
+  };
+  reader.readAsDataURL(file); // Read the file data as a DataURL
+});
 
 $('#postTextarea, #replyTextarea').keyup((event) => {
   var textbox = $(event.target);
@@ -19,6 +31,17 @@ $('#postTextarea, #replyTextarea').keyup((event) => {
   submitButton.prop('disabled', false);
 });
 
+// $('#editTextarea').keyup((event) => {
+//   var textbox = $(event.target);
+//   var value = textbox.val().trim();
+//   var editPostButton = $('#editPostButton');
+//   if (editPostButton.length == 0) return alert('No submit button found');
+//   if (value == '') {
+//     editPostButton.prop('disabled', true);
+//     return;
+//   }
+//   editPostButton.prop('disabled', false);
+// });
 $('#submitPostButton, #submitReplyButton').click(() => {
   var button = $(event.target);
 
@@ -47,6 +70,85 @@ $('#submitPostButton, #submitReplyButton').click(() => {
   });
 });
 
+/*
+------------------------------------------------------------------------------------------------
+*/
+
+$('#editPostModal').on('show.bs.modal', (event) => {
+  var button = $(event.relatedTarget);
+  var postId = getPostIdFromElement(button);
+  $('#editPostButton').data('id', postId);
+
+  $.get('/api/posts/' + postId, (results) => {
+    var content = results.postData.content;
+    console.log(results);
+    console.log(content);
+    // $('#originalPostContainer').text(content);
+    $('#editPostTextarea').val(content);
+  });
+});
+
+$('#editPostButton').click((event) => {
+  var postId = $(event.target).data('id');
+
+  var textbox = $('#editPostTextarea');
+
+  var data = {
+    content: textbox.val(),
+  };
+
+  $.post(`/api/posts/${postId}`, data, (postData) => {
+    if (postData.replyTo) {
+      location.reload();
+    } else {
+      var html = createPostHtml(postData);
+      $('.postsContainer').prepend(html);
+      textbox.val('');
+      button.prop('disabled', true);
+    }
+  });
+});
+
+$('#editPostModal').on('hidden.bs.modal', () =>
+  $('#originalPostContainer').html('')
+);
+
+$('#editPostTextarea').keyup((event) => {
+  var button = $(event.relatedTarget);
+  var postId = getPostIdFromElement(button);
+  var isModal = button.parents('.modal').length == 1;
+
+  var submitButton = $('#editPostModal');
+  if (submitButton.length == 0) return alert('No submit button found');
+
+  // Fetch original content from server by post ID
+  $.ajax({
+    url: '/getOriginalContent', // Update with your server endpoint to fetch original content
+    type: 'GET',
+    data: { postId: postId }, // Pass the post ID as data to the server
+    success: function (response) {
+      var originalContent = response.content; // Update with the actual response structure
+      console.log('Original content:', originalContent);
+      var editModal = createEditPostModal(userLoggedIn, originalContent); // Pass the original content to the createEditPostModal mixin
+      editModal.find('#editPostModal').data('id', button.data('id')); // Set the post/reply ID to the modal
+      editModal.modal('show');
+
+      var value = $('#editPostTextarea').val(); // Get the current value of the textarea
+      if (value == '') {
+        submitButton.prop('disabled', true);
+        return;
+      }
+      submitButton.prop('disabled', false);
+    },
+    error: function (xhr, textStatus, errorThrown) {
+      console.error('Error fetching original content:', errorThrown);
+    },
+  });
+});
+
+/*
+------------------------------------------------------------------------------------------------
+*/
 $('#replyModal').on('show.bs.modal', (event) => {
   var button = $(event.relatedTarget);
   var postId = getPostIdFromElement(button);
@@ -67,18 +169,6 @@ $('#deletePostModal').on('show.bs.modal', (event) => {
   $('#deletePostButton').data('id', postId);
 });
 
-$('#confirmPinModal').on('show.bs.modal', (event) => {
-  var button = $(event.relatedTarget);
-  var postId = getPostIdFromElement(button);
-  $('#pinPostButton').data('id', postId);
-});
-
-$('#unpinModal').on('show.bs.modal', (event) => {
-  var button = $(event.relatedTarget);
-  var postId = getPostIdFromElement(button);
-  $('#unpinPostButton').data('id', postId);
-});
-
 $('#deletePostButton').click((event) => {
   var postId = $(event.target).data('id');
 
@@ -94,6 +184,18 @@ $('#deletePostButton').click((event) => {
       location.reload();
     },
   });
+});
+
+$('#confirmPinModal').on('show.bs.modal', (event) => {
+  var button = $(event.relatedTarget);
+  var postId = getPostIdFromElement(button);
+  $('#pinPostButton').data('id', postId);
+});
+
+$('#unpinModal').on('show.bs.modal', (event) => {
+  var button = $(event.relatedTarget);
+  var postId = getPostIdFromElement(button);
+  $('#unpinPostButton').data('id', postId);
 });
 
 $('#pinPostButton').click((event) => {
@@ -131,7 +233,8 @@ $('#unpinPostButton').click((event) => {
     },
   });
 });
-
+// Globals
+var cropper;
 // upload photos to user profile
 $('#filePhoto').change(function () {
   if (this.files && this.files[0]) {
@@ -383,7 +486,8 @@ function createPostHtml(postData, largeFont = false) {
     }
 
     buttons = `<button class='pinButton ${pinnedClass}' data-id="${postData._id}" data-toggle="modal" data-target="${dataTarget}"><i class='fas fa-thumbtack'></i></button>
-                    <button data-id="${postData._id}" data-toggle="modal" data-target="#deletePostModal"><i class='fas fa-times'></i></button>`;
+                    <button data-id="${postData._id}" data-toggle="modal" data-target="#deletePostModal"><i class='fas fa-times'></i></button>
+                    <button data-id="${postData._id}" data-toggle="modal" data-target="#editPostModal"><i class='fas fa-edit'></i></button>`;
   }
 
   return `<div class='post ${largeFontClass}' data-id='${postData._id}'>
