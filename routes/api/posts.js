@@ -121,6 +121,33 @@ router.post('/', async (req, res, next) => {
     });
 });
 
+router.put('/:id', async (req, res, next) => {
+  if (!req.body.content) {
+    console.log('Content param not sent with request');
+    return res.sendStatus(400);
+  }
+
+  const postId = req.params.id;
+  const updatedContent = req.body.content;
+
+  try {
+    const updatedPost = await Post.findOneAndUpdate(
+      { _id: postId },
+      { content: updatedContent },
+      { new: true } // Return the updated post
+    ).populate('postedBy');
+
+    if (!updatedPost) {
+      res.sendStatus(404); // Not found
+    } else {
+      res.status(200).send(updatedPost);
+    }
+  } catch (error) {
+    console.log(error);
+    res.sendStatus(400);
+  }
+});
+
 router.put('/:id/like', async (req, res, next) => {
   var postId = req.params.id;
   var userId = req.session.user._id;

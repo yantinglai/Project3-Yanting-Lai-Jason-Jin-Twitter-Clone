@@ -31,17 +31,6 @@ $('#postTextarea, #replyTextarea').keyup((event) => {
   submitButton.prop('disabled', false);
 });
 
-// $('#editTextarea').keyup((event) => {
-//   var textbox = $(event.target);
-//   var value = textbox.val().trim();
-//   var editPostButton = $('#editPostButton');
-//   if (editPostButton.length == 0) return alert('No submit button found');
-//   if (value == '') {
-//     editPostButton.prop('disabled', true);
-//     return;
-//   }
-//   editPostButton.prop('disabled', false);
-// });
 $('#submitPostButton, #submitReplyButton').click(() => {
   var button = $(event.target);
 
@@ -83,37 +72,68 @@ $('#editPostModal').on('show.bs.modal', (event) => {
     var content = results.postData.content;
     console.log(results);
     console.log(content);
-    // $('#originalPostContainer').text(content);
     $('#editPostTextarea').val(content);
   });
-});
 
-$('#editPostButton').click((event) => {
-  var postId = $(event.target).data('id');
-
+  var submitButton = $('#editPostButton');
   var textbox = $('#editPostTextarea');
+  var originalValue = textbox.val().trim();
 
-  var data = {
-    content: textbox.val(),
-  };
+  textbox.on('input', (event) => {
+    var currentValue = $(event.target).val().trim();
 
-  $.post(`/api/posts/${postId}`, data, (postData) => {
-    if (postData.replyTo) {
-      location.reload();
+    if (currentValue === originalValue) {
+      submitButton.prop('disabled', true); // Disable submit button if content hasn't changed
     } else {
-      var html = createPostHtml(postData);
-      $('.postsContainer').prepend(html);
-      textbox.val('');
-      button.prop('disabled', true);
+      submitButton.prop('disabled', false); // Enable submit button if content has changed
     }
   });
+  submitButton.prop('disabled', true); // Disable submit button initially
 });
 
 $('#editPostModal').on('hidden.bs.modal', () =>
   $('#originalPostContainer').html('')
 );
 
-$('#editPostTextarea').keyup((event) => {
+$('#editPostButton').click((event) => {
+  event.preventDefault(); // Prevent form submission
+  var postId = $(event.target).data('id');
+  var textbox = $('#editPostTextarea');
+  var currentValue = textbox.val().trim();
+
+  $.get('/api/posts/' + postId, (results) => {
+    var originalValue = results.postData.content;
+
+    if (currentValue === originalValue) {
+      alert('Content has not changed');
+      return;
+    }
+
+    $.ajax({
+      url: `/api/posts/${postId}`,
+      type: 'PUT',
+      data: {
+        content: currentValue,
+      },
+      success: (postData) => {
+        var html = createPostHtml(postData);
+        var postElement = $(`.post[data-id="${postId}"]`); // Get the existing post element using the post ID
+
+        // Replace the existing post with the updated post
+        postElement.replaceWith(html);
+
+        textbox.val('');
+        $('#editPostButton').prop('disabled', true); // Update button disabled state
+        $('#editPostModal').modal('hide'); // Hide the modal
+      },
+      error: (error) => {
+        console.log(error);
+      },
+    });
+  });
+});
+
+$('#editTextarea').keyup((event) => {
   var button = $(event.relatedTarget);
   var postId = getPostIdFromElement(button);
   var isModal = button.parents('.modal').length == 1;
